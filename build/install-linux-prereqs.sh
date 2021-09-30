@@ -27,13 +27,13 @@
 
 # It's best not to run as root or with sudo, because we need to be able to
 # detect node versions installed locally for the user.
-if [[ $EUID == 0 ]]; then
-  echo "*****" 1>&2
-  echo "Please do not run as root." 1>&2
-  echo "This script will use sudo when needed." 1>&2
-  echo "*****" 1>&2
-  exit 1
-fi
+# if [[ $EUID == 0 ]]; then
+#   echo "*****" 1>&2
+#   echo "Please do not run as root." 1>&2
+#   echo "This script will use sudo when needed." 1>&2
+#   echo "*****" 1>&2
+#   exit 1
+# fi
 
 # Make sure this is an OS we can support.
 # "which apt" will return success if apt is found.

@@ -19,6 +19,7 @@
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.7.0",
     "cajon": "^0.4.4",
+    "copyfiles": "^2.4.1",
     "core-js": "^3.6.5",
     "dialog-polyfill": "^0.5.0",
     "es6-promise-polyfill": "^1.2.0",
@@ -53,7 +54,7 @@
     "material-design-lite": "^1.3.0",
     "mux.js": "^5.7.0",
     "pwacompat": "^2.0.10",
-    "rimraf": "^2.6.3",
+    "rimraf": "^2.7.1",
     "sprintf-js": "^1.1.2",
     "stylelint": "^13.8.0",
     "stylelint-config-standard": "^20.0.0",
@@ -71,7 +72,12 @@
   },
   "license": "Apache-2.0",
   "scripts": {
-    "prepublishOnly": "python build/checkversion.py && python build/all.py --force"
+    "prepublishOnly": "python build/checkversion.py && python build/all.py --force",
+    "clean": "rimraf ./dist",
+    "vct-build-debug": "npm run clean && ./build-docker/run.sh python2 //app/build/build.py --mode debug --name vct +@complete -@ads -@ui -@offline -@cast",
+    "vct-stage": "copyfiles -u 1 ./dist/* ../clip2vu/src/Vualto.VideoPlatform.Admin.Web/Content/lib/shaka && copyfiles -u 1 ./dist/*.d.ts ../clip2vu/src/Vualto.VideoPlatform.Admin.Web/TSScripts/types/shaka",
+    "scotparl-build": "npm run clean && ./build-docker/run.sh python2 //app/build/build.py --mode release --name scotparl +@complete -@ads -@ui -@offline -@cast",
+    "scotparl-stage": "copyfiles -u 1 ./dist/*.js ../scotparl-website/src/Vualto.ScotParl.Website.Web/wwwroot/lib/shaka"
   },
   "dependencies": {
     "eme-encryption-scheme-polyfill": "^2.0.3"

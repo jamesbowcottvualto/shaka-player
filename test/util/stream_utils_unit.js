@@ -16,14 +16,14 @@ describe('StreamUtils', () => {
   /** @type {!jasmine.Spy} */
   let decodingInfoSpy;
 
-  const originalDecodingInfo = navigator.mediaCapabilities.decodingInfo;
+  const originalDecodingInfo = window.shakaMediaCapabilities.decodingInfo;
 
   beforeEach(() => {
     decodingInfoSpy = jasmine.createSpy('decodingInfo');
   });
 
   afterEach(() => {
-    navigator.mediaCapabilities.decodingInfo = originalDecodingInfo;
+    window.shakaMediaCapabilities.decodingInfo = originalDecodingInfo;
   });
 
   describe('filterStreamsByLanguageAndRole', () => {
@@ -488,14 +488,30 @@ describe('StreamUtils', () => {
       });
 
       await StreamUtils.getDecodingInfosForVariants(manifest.variants,
-          /* usePersistentLicenses= */false);
+          /* usePersistentLicenses= */false, /* srcEquals= */ false);
+      expect(manifest.variants.length).toBeTruthy();
+      expect(manifest.variants[0].decodingInfos.length).toBe(1);
+      expect(manifest.variants[0].decodingInfos[0].supported).toBeTruthy();
+    });
+
+    it('for srcEquals content', async () => {
+      manifest = shaka.test.ManifestGenerator.generate((manifest) => {
+        manifest.addVariant(0, (variant) => {
+          variant.addVideo(1, (stream) => {
+            stream.mime('video/mp4', 'avc1.4d400d');
+          });
+        });
+      });
+
+      await StreamUtils.getDecodingInfosForVariants(manifest.variants,
+          /* usePersistentLicenses= */false, /* srcEquals= */ true);
       expect(manifest.variants.length).toBeTruthy();
       expect(manifest.variants[0].decodingInfos.length).toBe(1);
       expect(manifest.variants[0].decodingInfos[0].supported).toBeTruthy();
     });
 
     it('handles decodingInfo exception', async () => {
-      navigator.mediaCapabilities.decodingInfo =
+      window.shakaMediaCapabilities.decodingInfo =
           shaka.test.Util.spyFunc(decodingInfoSpy);
       // If decodingInfo() fails, setDecodingInfo should finish without throwing
       // an exception, and the variant should have no decodingInfo result.
@@ -517,9 +533,44 @@ describe('StreamUtils', () => {
       });
 
       await StreamUtils.getDecodingInfosForVariants(manifest.variants,
-          /* usePersistentLicenses= */false);
+          /* usePersistentLicenses= */false, /* srcEquals= */ false);
       expect(manifest.variants.length).toBe(1);
       expect(manifest.variants[0].decodingInfos.length).toBe(0);
+    });
+
+    it('includes transferFunction in config when hdr', async () => {
+      window.shakaMediaCapabilities.decodingInfo =
+          shaka.test.Util.spyFunc(decodingInfoSpy);
+
+      manifest = shaka.test.ManifestGenerator.generate((manifest) => {
+        manifest.addVariant(0, (variant) => {
+          variant.addVideo(0, (stream) => {
+            stream.mime('video/mp4', 'avc1.640028');
+            stream.hdr = 'SDR';
+          });
+        });
+        manifest.addVariant(1, (variant) => {
+          variant.addVideo(1, (stream) => {
+            stream.mime('video/mp4', 'hvc1.2.4.L150.90');
+            stream.hdr = 'PQ';
+          });
+        });
+        manifest.addVariant(2, (variant) => {
+          variant.addVideo(2, (stream) => {
+            stream.mime('video/mp4', 'hvc1.2.4.L153.B0');
+            stream.hdr = 'HLG';
+          });
+        });
+      });
+
+      await StreamUtils.getDecodingInfosForVariants(manifest.variants,
+          /* usePersistentLicenses= */ false, /* srcEquals= */ false);
+      expect(decodingInfoSpy.calls.argsFor(0)[0].video.transferFunction)
+          .toBe('srgb');
+      expect(decodingInfoSpy.calls.argsFor(1)[0].video.transferFunction)
+          .toBe('pq');
+      expect(decodingInfoSpy.calls.argsFor(2)[0].video.transferFunction)
+          .toBe('hlg');
     });
   });
 
@@ -810,7 +861,7 @@ describe('StreamUtils', () => {
           });
         });
       });
-      navigator.mediaCapabilities.decodingInfo =
+      window.shakaMediaCapabilities.decodingInfo =
           shaka.test.Util.spyFunc(decodingInfoSpy);
       decodingInfoSpy.and.callFake((config) => {
         const res = config.video.contentType.includes('notsmooth') ?
@@ -820,7 +871,7 @@ describe('StreamUtils', () => {
       });
 
       await StreamUtils.getDecodingInfosForVariants(manifest.variants,
-          /* usePersistentLicenses= */false);
+          /* usePersistentLicenses= */false, /* srcEquals= */ false);
 
       shaka.util.StreamUtils.chooseCodecsAndFilterManifest(manifest,
           /* preferredVideoCodecs= */[],

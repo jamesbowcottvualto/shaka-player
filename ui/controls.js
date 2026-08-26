@@ -198,6 +198,10 @@ shaka.ui.Controls = class extends shaka.util.FakeEventTarget {
    * @export
    */
   async destroy() {
+    if (document.pictureInPictureElement == this.localVideo_) {
+      await document.exitPictureInPicture();
+    }
+
     if (this.eventManager_) {
       this.eventManager_.release();
       this.eventManager_ = null;
@@ -569,9 +573,8 @@ shaka.ui.Controls = class extends shaka.util.FakeEventTarget {
           }
         }
       } catch (error) {
-        this.dispatchEvent(new shaka.util.FakeEvent('error', {
-          detail: error,
-        }));
+        this.dispatchEvent(new shaka.util.FakeEvent(
+            'error', (new Map()).set('detail', error)));
       }
     }
   }
@@ -1158,9 +1161,8 @@ shaka.ui.Controls = class extends shaka.util.FakeEventTarget {
   /** @private */
   onCastStatusChange_() {
     const isCasting = this.castProxy_.isCasting();
-    this.dispatchEvent(new shaka.util.FakeEvent('caststatuschanged', {
-      newStatus: isCasting,
-    }));
+    this.dispatchEvent(new shaka.util.FakeEvent(
+        'caststatuschanged', (new Map()).set('newStatus', isCasting)));
 
     if (isCasting) {
       this.controlsContainer_.setAttribute('casting', 'true');

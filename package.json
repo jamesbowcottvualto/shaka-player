@@ -74,9 +74,9 @@
   "scripts": {
     "prepublishOnly": "python build/checkversion.py && python build/all.py --force",
     "clean": "rimraf ./dist",
-    "vct-build-debug": "npm run clean && ./build-docker/run.sh python2 //app/build/build.py --mode debug --name vct +@complete -@ads -@ui -@offline -@cast",
+    "vct-build-debug": "npm run clean && ./build-docker/docker-run.sh python //app/build/build.py --mode debug --name vct +@complete -@ads -@ui -@offline -@cast",
     "vct-stage": "copyfiles -u 1 ./dist/* ../clip2vu/src/Vualto.VideoPlatform.Admin.Web/Content/lib/shaka && copyfiles -u 1 ./dist/*.d.ts ../clip2vu/src/Vualto.VideoPlatform.Admin.Web/TSScripts/types/shaka",
-    "scotparl-build": "npm run clean && ./build-docker/run.sh python2 //app/build/build.py --mode release --name scotparl +@complete -@ads -@ui -@offline -@cast",
+    "scotparl-build": "npm run clean && ./build-docker/docker-run.sh python //app/build/build.py --mode release --name scotparl +@complete -@ads -@ui -@offline -@cast",
     "scotparl-stage": "copyfiles -u 1 ./dist/*.js ../scotparl-website/src/Vualto.ScotParl.Website.Web/wwwroot/lib/shaka"
   },
   "dependencies": {

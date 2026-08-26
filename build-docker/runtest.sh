@@ -1,1 +1,0 @@
-./run.sh python2 //app/build/build.py --mode debug --name vct +@complete -@ads -@ui -@offline -@cast
